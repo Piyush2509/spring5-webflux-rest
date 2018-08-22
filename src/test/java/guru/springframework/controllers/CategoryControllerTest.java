@@ -73,11 +73,12 @@ public class CategoryControllerTest {
 
 	@Test
 	public void testPatch() throws Exception {
-		given(categoryRepository.findById(anyString())).willReturn(Mono.just(Category.builder().build()));
+		given(categoryRepository.findById(anyString()))
+				.willReturn(Mono.just(Category.builder().description("Old Desc").build()));
 
 		given(categoryRepository.save(any(Category.class))).willReturn(Mono.just(Category.builder().build()));
 
-		Mono<Category> catToUpdateMono = Mono.just(Category.builder().description("Some Cat").build());
+		Mono<Category> catToUpdateMono = Mono.just(Category.builder().description("New Desc").build());
 
 		webTestClient.patch().uri("/api/v1/categories/someid").body(catToUpdateMono, Category.class).exchange()
 				.expectStatus().isOk();
@@ -87,11 +88,12 @@ public class CategoryControllerTest {
 
 	@Test
 	public void testPatchNoChanges() throws Exception {
-		given(categoryRepository.findById(anyString())).willReturn(Mono.just(Category.builder().build()));
+		given(categoryRepository.findById(anyString()))
+				.willReturn(Mono.just(Category.builder().description("Old Desc").build()));
 
 		given(categoryRepository.save(any(Category.class))).willReturn(Mono.just(Category.builder().build()));
 
-		Mono<Category> catToUpdateMono = Mono.just(Category.builder().build());
+		Mono<Category> catToUpdateMono = Mono.just(Category.builder().description("Old Desc").build());
 
 		webTestClient.patch().uri("/api/v1/categories/someid").body(catToUpdateMono, Category.class).exchange()
 				.expectStatus().isOk();
