@@ -1,9 +1,12 @@
 package guru.springframework.controllers;
 
+import static org.mockito.ArgumentMatchers.any;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
+import org.reactivestreams.Publisher;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import guru.springframework.domain.Vendor;
@@ -43,6 +46,30 @@ public class VendorControllerTest {
 				.willReturn(Mono.just(Vendor.builder().firstName("Jimmy").lastName("Johns").build()));
 
 		webTestClient.get().uri("/api/v1/vendors/someid").exchange().expectBodyList(Vendor.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testCreate() throws Exception {
+		BDDMockito.given(vendorRepository.saveAll(any(Publisher.class)))
+				.willReturn(Flux.just(Vendor.builder().build()));
+
+		Mono<Vendor> vendorToSaveMono = Mono
+				.just(Vendor.builder().firstName("First Name").lastName("Last Name").build());
+
+		webTestClient.post().uri("/api/v1/vendors").body(vendorToSaveMono, Vendor.class).exchange().expectStatus()
+				.isCreated();
+	}
+
+	@Test
+	public void testUpdate() throws Exception {
+		BDDMockito.given(vendorRepository.save(any(Vendor.class))).willReturn(Mono.just(Vendor.builder().build()));
+
+		Mono<Vendor> vendorToUpdateMono = Mono
+				.just(Vendor.builder().firstName("First Name").lastName("Last Name").build());
+
+		webTestClient.put().uri("/api/v1/vendors/someid").body(vendorToUpdateMono, Vendor.class).exchange()
+				.expectStatus().isOk();
 	}
 
 }
