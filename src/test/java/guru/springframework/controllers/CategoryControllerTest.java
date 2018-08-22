@@ -1,9 +1,12 @@
 package guru.springframework.controllers;
 
+import static org.mockito.ArgumentMatchers.any;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
+import org.reactivestreams.Publisher;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import guru.springframework.domain.Category;
@@ -41,6 +44,18 @@ public class CategoryControllerTest {
 				.willReturn(Mono.just(Category.builder().description("Cat1").build()));
 
 		webTestClient.get().uri("/api/v1/categories/someid").exchange().expectBodyList(Category.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testCreate() throws Exception {
+		BDDMockito.given(categoryRepository.saveAll(any(Publisher.class)))
+				.willReturn(Flux.just(Category.builder().description("descrp").build()));
+
+		Mono<Category> catToSaveMono = Mono.just(Category.builder().description("Some Cat").build());
+
+		webTestClient.post().uri("/api/v1/categories").body(catToSaveMono, Category.class).exchange().expectStatus()
+				.isCreated();
 	}
 
 }
